@@ -38,6 +38,8 @@ def get_user_by_email(db: Session, email: str):
 def create_user(db: Session, data: schemas.UserCreateSchema):
     db_user = User()
     db_user.email = data.email
+    db_user.first_name = data.first_name
+    db_user.last_name = data.last_name
     hashed_password = get_password_hash(data.password)
     db_user.password = hashed_password
     db.add(db_user)

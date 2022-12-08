@@ -7,6 +7,8 @@ from core.schemas import BaseModelSchema
 
 class UserBaseSchema(BaseModelSchema):
     email: EmailStr
+    first_name: str
+    last_name: str
 
 
 class UserCreateSchema(UserBaseSchema):
@@ -26,6 +28,8 @@ class UserCreateSchema(UserBaseSchema):
         schema_extra = {
             "example": {
                 "email": "user@cimer.com",
+                "first_name": "FirstName",
+                "last_name": "LastName",
                 "password": "examplePassword123!",
             }
         }

@@ -1,25 +1,17 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Response
+from fastapi import FastAPI, HTTPException
 import uvicorn
-from sqlalchemy import exc
 
 from core.dependencies import DBDependency
-from auth import service, models, schemas
+from auth import service, models, schemas, router as auth_router
 from database import engine
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
-@app.post("/register/")
-def register_user(data: schemas.UserCreateSchema, db=DBDependency):
-    try:
-        service.create_user(db, data)
-    except exc.IntegrityError as e:
-        error_info = e.orig.args
-        if service.find_detail_in_error("email", error_info):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with specified email already exists")
-    return Response(status_code=status.HTTP_201_CREATED)
+app.include_router(auth_router.router,
+                   prefix="/auth",
+                   tags=["auth"])
 
 
 @app.get("/users/{user_id}", response_model=schemas.UserReadSchema)
