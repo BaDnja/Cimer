@@ -41,3 +41,16 @@ class UserReadSchema(UserBaseSchema):
 
     class Config:
         orm_mode = True
+
+
+class UserLoginSchema(BaseModelSchema):
+    email: EmailStr
+    password: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "email": "user@cimer.com",
+                "password": "examplePassword123!",
+            }
+        }

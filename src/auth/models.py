@@ -15,6 +15,6 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def __str__(self):
-        return self.username
+        return f'{self.first_name} {self.last_name}'
 
 

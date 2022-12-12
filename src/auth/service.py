@@ -1,7 +1,7 @@
 import re
 
-from sqlalchemy.orm import Session
 from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 
 from auth import models, schemas
 from auth.models import User
@@ -17,18 +17,28 @@ def get_password_hash(password: str):
     return bcrypt_context.hash(password)
 
 
+def verify_password(plain_password: str, hashed_password: str):
+    """Return true if plain password matches hashed password from the db after verification"""
+    return bcrypt_context.verify(plain_password, hashed_password)
+
+
 def find_detail_in_error(substring: str, message: str):
     """Handle search for substring in error message. Used in exception handling."""
     return re.search(str(substring), str(message))
 
 
 # Database interactive functions
-def get_user(db: Session, user_id: int):
-    return db.query(models.User).filter(models.User.user_id == user_id).first()
-
-
-def get_users(db: Session):
-    return db.query(models.User).all()
+def authenticate_user(email: str, password: str, db: Session):
+    user = db.query(User).filter(User.email == email).first()
+    print(password)
+    print(user.password)
+    print(user)
+    print(bcrypt_context.verify(password, user.password))
+    if not user:
+        return False
+    if not verify_password(password, user.password):
+        return False
+    return user
 
 
 def get_user_by_email(db: Session, email: str):

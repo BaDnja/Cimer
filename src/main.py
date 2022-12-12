@@ -1,8 +1,8 @@
-from fastapi import FastAPI, HTTPException
 import uvicorn
+from fastapi import FastAPI, HTTPException
 
-from core.dependencies import DBDependency
 from auth import service, models, schemas, router as auth_router
+from core.dependencies import DBDependency
 from database import engine
 
 models.Base.metadata.create_all(bind=engine)
