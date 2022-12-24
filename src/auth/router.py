@@ -19,9 +19,11 @@ def register_user(data: schemas.UserCreateSchema, db=DBDependency):
     return Response(status_code=status.HTTP_201_CREATED)
 
 
-@router.post("/login", response_model=schemas.UserReadSchema)
-def login_user(data: schemas.UserLoginSchema, db=DBDependency):
+@router.post("/login")
+def login_user(data: schemas.UserLoginSchema, response: Response, db=DBDependency):
     user = service.authenticate_user(data.email, data.password, db)
     if not user:
         raise exceptions.invalid_credentials_exception()
-    return user
+    token = service.create_auth_token(user.user_id)
+    response.set_cookie(key="auth_token", value=token)
+    return {"auth_token": token}

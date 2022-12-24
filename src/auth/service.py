@@ -1,5 +1,8 @@
+import os
 import re
+from datetime import datetime, timedelta
 from typing import Match
+from jose import jwt, JWTError
 
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -51,8 +54,17 @@ def find_detail_in_error(substring: str, message: str) -> Match[str] | None:
     return re.search(str(substring), str(message))
 
 
+def create_auth_token(user_id: int) -> str:
+    token_creation_time = datetime.utcnow()
+    encode = {"sub": str(user_id), "iat": token_creation_time}
+    token_expiration_time = float(os.getenv("TOKEN_EXP_MINUTES"))
+    expire = datetime.utcnow() + timedelta(minutes=token_expiration_time)
+    encode.update({"exp": expire})
+    return jwt.encode(encode, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
+
+
 # Database interactive functions
-def authenticate_user(email: str, password: str, db: Session) -> object | bool:
+def authenticate_user(email: str, password: str, db: Session) -> User | bool:
     """Search for user in database and return user object. If user doesn't exist return False
 
     Args:
@@ -72,7 +84,7 @@ def authenticate_user(email: str, password: str, db: Session) -> object | bool:
     return user
 
 
-def get_user_by_email(db: Session, email: str) -> object | None:
+def get_user_by_email(db: Session, email: str) -> User | None:
     """Search for user in database based on provided email.
 
     Args:
@@ -86,7 +98,7 @@ def get_user_by_email(db: Session, email: str) -> object | None:
     return db.query(models.User).filter(models.User.email == email).first()
 
 
-def create_user(db: Session, data: schemas.UserCreateSchema) -> object:
+def create_user(db: Session, data: schemas.UserCreateSchema) -> User:
     """Create user in database and return created object
 
     Args:
