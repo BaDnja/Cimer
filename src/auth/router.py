@@ -19,7 +19,7 @@ def register_user(data: schemas.UserCreateSchema, db=DBDependency):
     return Response(status_code=status.HTTP_201_CREATED)
 
 
-@router.post("/login")
+@router.post("/login", response_model=schemas.UserReadSchema)
 def login_user(data: schemas.UserLoginSchema, db=DBDependency):
     user = service.authenticate_user(data.email, data.password, db)
     if not user:
