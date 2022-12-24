@@ -2,13 +2,17 @@ import os
 import re
 from datetime import datetime, timedelta
 from typing import Match
-from jose import jwt, JWTError
 
+from fastapi import Depends
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from auth import models, schemas
+from auth.dependencies import has_valid_token
+from auth.exceptions import invalid_credentials_exception
 from auth.models import User
+from core.dependencies import DBDependency
 
 # CONSTANTS
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -55,12 +59,43 @@ def find_detail_in_error(substring: str, message: str) -> Match[str] | None:
 
 
 def create_auth_token(user_id: int) -> str:
+    """Create authentication jwt token for specific user
+
+    Args:
+        user_id (int): user id for which jwt token will be created
+
+    Returns:
+        jwt token for specific user
+    """
     token_creation_time = datetime.utcnow()
     encode = {"sub": str(user_id), "iat": token_creation_time}
     token_expiration_time = float(os.getenv("TOKEN_EXP_MINUTES"))
     expire = datetime.utcnow() + timedelta(minutes=token_expiration_time)
     encode.update({"exp": expire})
     return jwt.encode(encode, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
+
+
+def get_current_user(token: str = Depends(has_valid_token), db=DBDependency):
+    """Get current user object if jwt is valid
+
+    Args:
+        token (str): jwt token
+        db (Session): database session
+
+    Returns:
+        User object or invalid credentials exception
+    """
+    try:
+        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM")])
+        user_id: int = payload.get("sub")
+        if user_id is None:
+            raise invalid_credentials_exception()
+        user = db.query(User).get(user_id)
+        if user is None:
+            return invalid_credentials_exception()
+        return user
+    except JWTError:
+        invalid_credentials_exception()
 
 
 # Database interactive functions

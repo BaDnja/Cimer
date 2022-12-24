@@ -3,6 +3,7 @@ from sqlalchemy import exc
 
 from auth import schemas, service, exceptions
 from core.dependencies import DBDependency
+from core.settings import AUTH_TOKEN
 
 router = APIRouter()
 
@@ -25,5 +26,5 @@ def login_user(data: schemas.UserLoginSchema, response: Response, db=DBDependenc
     if not user:
         raise exceptions.invalid_credentials_exception()
     token = service.create_auth_token(user.user_id)
-    response.set_cookie(key="auth_token", value=token)
-    return {"auth_token": token}
+    response.set_cookie(key=AUTH_TOKEN, value=token)
+    return {AUTH_TOKEN: token}
