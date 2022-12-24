@@ -13,7 +13,6 @@ bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Intermediate function helpers
 def get_password_hash(password: str):
     """Return password hash from plain password"""
-    password = bcrypt_context.hash(password)
     return bcrypt_context.hash(password)
 
 
@@ -30,10 +29,6 @@ def find_detail_in_error(substring: str, message: str):
 # Database interactive functions
 def authenticate_user(email: str, password: str, db: Session):
     user = db.query(User).filter(User.email == email).first()
-    print(password)
-    print(user.password)
-    print(user)
-    print(bcrypt_context.verify(password, user.password))
     if not user:
         return False
     if not verify_password(password, user.password):
