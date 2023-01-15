@@ -1,6 +1,6 @@
 import os
 
-from fastapi import HTTPException, Request, Response, status
+from fastapi import HTTPException, Request, Response, status, Depends
 from jose import jwt, JOSEError
 
 from core.settings import AUTH_TOKEN
@@ -16,3 +16,6 @@ def has_valid_token(request: Request, response: Response):
     except JOSEError as e:
         response.delete_cookie(key=AUTH_TOKEN)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+
+ValidToken = Depends(has_valid_token)
