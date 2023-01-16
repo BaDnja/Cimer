@@ -5,6 +5,7 @@ def invalid_credentials_exception():
     """Return HTTPException 401 for invalid credentials"""
     response = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid credentials"
+        detail="Invalid credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
     return response
